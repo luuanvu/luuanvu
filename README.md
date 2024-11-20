@@ -4,7 +4,6 @@ class ZaloAPI {
         this.accessToken = null; // Global access token
         this.cache = {}; // Cache for frequently accessed data
     }
-    
     // Extension metadata and blocks
     getInfo() {
         return {
@@ -27,9 +26,8 @@ class ZaloAPI {
                     opcode: 'getUserInfo',
                     blockType: Scratch.BlockType.REPORTER,
                     text: 'Get user information'
-                },
-
-                // Messaging
+            },
+                 // Messaging
                 {
                     opcode: 'sendMessageToUser',
                     blockType: Scratch.BlockType.COMMAND,
@@ -60,8 +58,7 @@ class ZaloAPI {
                         }
                     }
                 },
-
-                // Group Messaging
+               // Group Messaging
                 {
                     opcode: 'sendMessageToGroup',
                     blockType: Scratch.BlockType.COMMAND,
@@ -77,15 +74,13 @@ class ZaloAPI {
                         }
                     }
                 },
-
-                // Friend Management
+             // Friend Management
                 {
                     opcode: 'getFriendList',
                     blockType: Scratch.BlockType.REPORTER,
                     text: 'Get friend list'
                 },
-
-                // Media Handling
+                 // Media Handling
                 {
                     opcode: 'sendVideoToUser',
                     blockType: Scratch.BlockType.COMMAND,
@@ -101,8 +96,7 @@ class ZaloAPI {
                         }
                     }
                 },
-
-                // Custom API
+                   // Custom API
                 {
                     opcode: 'customApiRequest',
                     blockType: Scratch.BlockType.REPORTER,
@@ -117,47 +111,39 @@ class ZaloAPI {
             ]
         };
     }
-
-    // Unified API Call Function
+             // Unified API Call Function
     async apiCall(endpoint, method = 'GET', body = null) {
         if (!this.accessToken) {
             console.error('User is not logged in');
             return 'Not logged in';
         }
-
         const headers = { 'access_token': this.accessToken };
         if (body) headers['Content-Type'] = 'application/json';
-
-        try {
+     try {
             const response = await fetch(endpoint, {
                 method,
                 headers,
                 body: body ? JSON.stringify(body) : null
             });
-
-            const data = await response.json();
-
-            if (data.error) {
+             const data = await response.json();
+              if (data.error) {
                 console.error(`API error (${endpoint}):`, data.message);
                 return `Error: ${data.message}`;
             }
-
-            return data;
+           return data;
         } catch (error) {
             console.error(`Network error (${endpoint}):`, error);
             return 'Network error';
         }
     }
-
-    // Authentication
+           // Authentication
     async login(args) {
         const authCode = args.AUTH_CODE.trim();
         if (!authCode) {
             console.error('Auth code is required');
             return;
         }
-
-        try {
+               try {
             const response = await fetch('https://oauth.zaloapp.com/v3/access_token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -168,9 +154,7 @@ class ZaloAPI {
                     redirect_uri: '<REDIRECT_URI>'
                 })
             });
-
-            const data = await response.json();
-
+                   const data = await response.json();
             if (data.access_token) {
                 this.accessToken = data.access_token;
                 console.log('Successfully logged in.');
@@ -181,55 +165,44 @@ class ZaloAPI {
             console.error('Login error:', error);
         }
     }
-
-    // Get user info
+     // Get user info
     async getUserInfo() {
         if (this.cache.userInfo) {
             console.log('Returning cached user info.');
             return this.cache.userInfo;
         }
-
         const endpoint = 'https://openapi.zalo.me/v2.0/me';
         const data = await this.apiCall(endpoint);
-
         if (data.id && data.name) {
             this.cache.userInfo = `ID: ${data.id}, Name: ${data.name}`;
             return this.cache.userInfo;
         }
-
         return 'Error retrieving user info';
     }
-
     // Send text message to user
     async sendMessageToUser(args) {
         const message = args.MESSAGE.trim();
         const userId = args.USER_ID.trim();
-
         if (!message || !userId) {
             console.error('Message and User ID are required');
             return;
         }
-
         const endpoint = 'https://openapi.zalo.me/v2.0/oa/message';
         const body = {
             recipient: { user_id: userId },
             message: { text: message }
         };
-
         const data = await this.apiCall(endpoint, 'POST', body);
         console.log(data);
     }
-
     // Send image to user
     async sendImageToUser(args) {
         const imageUrl = args.IMAGE_URL.trim();
         const userId = args.USER_ID.trim();
-
         if (!imageUrl || !userId) {
             console.error('Image URL and User ID are required');
             return;
         }
-
         const endpoint = 'https://openapi.zalo.me/v2.0/oa/message';
         const body = {
             recipient: { user_id: userId },
@@ -240,54 +213,43 @@ class ZaloAPI {
                 }
             }
         };
-
         const data = await this.apiCall(endpoint, 'POST', body);
         console.log(data);
     }
-
     // Send message to group
     async sendMessageToGroup(args) {
         const message = args.MESSAGE.trim();
         const groupId = args.GROUP_ID.trim();
-
         if (!message || !groupId) {
             console.error('Message and Group ID are required');
             return;
         }
-
         const endpoint = 'https://openapi.zalo.me/v2.0/oa/group/message';
         const body = {
             group_id: groupId,
             message: { text: message }
         };
-
         const data = await this.apiCall(endpoint, 'POST', body);
         console.log(data);
     }
-
     // Get friend list
     async getFriendList() {
         const endpoint = 'https://openapi.zalo.me/v2.0/friend/list';
         const data = await this.apiCall(endpoint);
-
         if (data && data.friends) {
             this.cache.friends = data.friends;
             return JSON.stringify(data.friends);
         }
-
         return 'Error retrieving friend list';
     }
-
     // Send video to user
     async sendVideoToUser(args) {
         const videoUrl = args.VIDEO_URL.trim();
         const userId = args.USER_ID.trim();
-
         if (!videoUrl || !userId) {
             console.error('Video URL and User ID are required');
             return;
         }
-
         const endpoint = 'https://openapi.zalo.me/v2.0/oa/message';
         const body = {
             recipient: { user_id: userId },
@@ -298,11 +260,9 @@ class ZaloAPI {
                 }
             }
         };
-
         const data = await this.apiCall(endpoint, 'POST', body);
         console.log(data);
     }
-
     // Custom API
     async customApiRequest(args) {
         const endpoint = args.API_ENDPOINT.trim();
@@ -310,8 +270,7 @@ class ZaloAPI {
             console.error('API endpoint is required');
             return;
         }
-
-        const data = await this.apiCall(endpoint);
+       const data = await this.apiCall(endpoint);
         return JSON.stringify(data);
     }
 }
